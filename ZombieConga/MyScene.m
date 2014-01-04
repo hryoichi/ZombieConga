@@ -14,6 +14,9 @@
 {
     if (self = [super initWithSize:size]) {
         self.backgroundColor = [SKColor whiteColor];
+        SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"background"];
+        bg.position = CGPointMake(self.size.width/2, self.size.height/2);
+        [self addChild:bg];
     }
     return self;
 }
