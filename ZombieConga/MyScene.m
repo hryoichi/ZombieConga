@@ -43,6 +43,7 @@
     _lastUpdateTime = currentTime;
 
     [self moveSprite:_zombie velocity:_velocity];
+    [self rotateSprite:_zombie toFace:_velocity];
     [self boundsCheckPlayer];
 }
 
@@ -77,6 +78,11 @@
 
     sprite.position = CGPointMake(sprite.position.x + amountToMove.x,
                                   sprite.position.y + amountToMove.y);
+}
+
+- (void)rotateSprite:(SKSpriteNode *)sprite toFace:(CGPoint)direction
+{
+    sprite.zRotation = atan2f(direction.y, direction.x);
 }
 
 - (void)moveZombieToward:(CGPoint)location
