@@ -39,6 +39,23 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     return atan2f(a.y, a.x);
 }
 
+static inline CGFloat ScalarSign(CGFloat a)
+{
+    return a >= 0 ? 1 : -1;
+}
+
+// Returns shortest angle between two angles,
+// between -M_PI and M_PI
+static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat b)
+{
+    CGFloat difference = b - a;
+    CGFloat angle = fmodf(difference, M_PI * 2);
+    if (angle >= M_PI) {
+        angle -= M_PI * 2;
+    }
+    return angle;
+}
+
 @implementation MyScene
 {
     SKSpriteNode *_zombie;
@@ -83,8 +100,8 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     }
     else {
         [self moveSprite:_zombie velocity:_velocity];
-        [self rotateSprite:_zombie toFace:_velocity];
         [self boundsCheckPlayer];
+        [self rotateSprite:_zombie toFace:_velocity rotateRadiansPerSec:ZOMBIE_ROTATE_RADIANS_PER_SEC];
     }
 }
 
@@ -125,9 +142,24 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     sprite.position = CGPointAdd(sprite.position, amountToMove);
 }
 
-- (void)rotateSprite:(SKSpriteNode *)sprite toFace:(CGPoint)direction
+- (void)rotateSprite:(SKSpriteNode *)sprite toFace:(CGPoint)velocity
 {
-    sprite.zRotation = CGPointToAngle(direction);
+    sprite.zRotation = CGPointToAngle(velocity);
+}
+
+- (void)rotateSprite:(SKSpriteNode *)sprite
+              toFace:(CGPoint)velocity
+ rotateRadiansPerSec:(CGFloat)rotateRadiansPerSec
+{
+    CGFloat targetAngle = CGPointToAngle(velocity);
+    CGFloat shortest = ScalarShortestAngleBetween(sprite.zRotation, targetAngle);
+
+    CGFloat amtToRotate = rotateRadiansPerSec * _dt;
+    if (ABS(shortest) < amtToRotate) {
+        amtToRotate = ABS(shortest);
+    }
+
+    sprite.zRotation += ScalarSign(shortest) * amtToRotate;
 }
 
 - (void)moveZombieToward:(CGPoint)location
