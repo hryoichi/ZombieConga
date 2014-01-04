@@ -9,6 +9,9 @@
 #import "MyScene.h"
 
 @implementation MyScene
+{
+    SKSpriteNode *_zombie;
+}
 
 -(id)initWithSize:(CGSize)size
 {
@@ -17,6 +20,10 @@
         SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"background"];
         bg.position = CGPointMake(self.size.width/2, self.size.height/2);
         [self addChild:bg];
+
+        _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
+        _zombie.position = CGPointMake(100.0, 100.0);
+        [self addChild:_zombie];
     }
     return self;
 }
