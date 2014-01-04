@@ -45,6 +45,7 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     CGPoint _velocity;
     NSTimeInterval _lastUpdateTime;
     NSTimeInterval _dt;
+    CGPoint _lastTouchLocation;
 }
 
 -(id)initWithSize:(CGSize)size
@@ -73,9 +74,18 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     }
     _lastUpdateTime = currentTime;
 
-    [self moveSprite:_zombie velocity:_velocity];
-    [self rotateSprite:_zombie toFace:_velocity];
-    [self boundsCheckPlayer];
+    CGPoint offset = CGPointSubtract(_lastTouchLocation, _zombie.position);
+    CGFloat distance = CGPointLength(offset);
+
+    if (distance < ZOMBIE_MOVE_POINTS_PER_SEC * _dt) {
+        _zombie.position = _lastTouchLocation;
+        _velocity = CGPointZero;
+    }
+    else {
+        [self moveSprite:_zombie velocity:_velocity];
+        [self rotateSprite:_zombie toFace:_velocity];
+        [self boundsCheckPlayer];
+    }
 }
 
 #pragma mark - Touch Events
@@ -85,6 +95,8 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     UITouch *touch = [touches anyObject];
     CGPoint touchLocation = [touch locationInNode:self];
     [self moveZombieToward:touchLocation];
+
+    _lastTouchLocation = touchLocation;
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -92,6 +104,8 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     UITouch *touch = [touches anyObject];
     CGPoint touchLocation = [touch locationInNode:self];
     [self moveZombieToward:touchLocation];
+
+    _lastTouchLocation = touchLocation;
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
@@ -99,6 +113,8 @@ static inline CGFloat CGPointToAngle(const CGPoint a)
     UITouch *touch = [touches anyObject];
     CGPoint touchLocation = [touch locationInNode:self];
     [self moveZombieToward:touchLocation];
+
+    _lastTouchLocation = touchLocation;
 }
 
 #pragma mark - Private
