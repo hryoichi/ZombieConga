@@ -8,6 +8,37 @@
 
 #import "MyScene.h"
 
+static inline CGPoint CGPointAdd(const CGPoint a, const CGPoint b)
+{
+    return CGPointMake(a.x + b.x, a.y + b.y);
+}
+
+static inline CGPoint CGPointSubtract(const CGPoint a, const CGPoint b)
+{
+    return CGPointMake(a.x - b.x, a.y - b.y);
+}
+
+static inline CGPoint CGPointMultiplyScalar(const CGPoint a, const CGFloat b)
+{
+    return CGPointMake(a.x * b, a.y * b);
+}
+
+static inline CGFloat CGPointLength(const CGPoint a)
+{
+    return sqrtf(a.x * a.x + a.y * a.y);
+}
+
+static inline CGPoint CGPointNormalize(const CGPoint a)
+{
+    CGFloat length = CGPointLength(a);
+    return CGPointMake(a.x / length, a.y / length);
+}
+
+static inline CGFloat CGPointToAngle(const CGPoint a)
+{
+    return atan2f(a.y, a.x);
+}
+
 @implementation MyScene
 {
     SKSpriteNode *_zombie;
@@ -74,28 +105,21 @@
 
 - (void)moveSprite:(SKSpriteNode *)sprite velocity:(CGPoint)velocity
 {
-    CGPoint amountToMove = CGPointMake(velocity.x * _dt, velocity.y * _dt);
-
-    sprite.position = CGPointMake(sprite.position.x + amountToMove.x,
-                                  sprite.position.y + amountToMove.y);
+    CGPoint amountToMove = CGPointMultiplyScalar(velocity, _dt);
+    sprite.position = CGPointAdd(sprite.position, amountToMove);
 }
 
 - (void)rotateSprite:(SKSpriteNode *)sprite toFace:(CGPoint)direction
 {
-    sprite.zRotation = atan2f(direction.y, direction.x);
+    sprite.zRotation = CGPointToAngle(direction);
 }
 
 - (void)moveZombieToward:(CGPoint)location
 {
-    CGPoint offset = CGPointMake(location.x - _zombie.position.x,
-                                 location.y - _zombie.position.y);
-    CGFloat length = sqrtf(offset.x * offset.x + offset.y * offset.y);
+    CGPoint offset = CGPointSubtract(location, _zombie.position);
+    CGPoint direction = CGPointNormalize(offset);
 
-    // Normalizing a vector
-    CGPoint direction = CGPointMake(offset.x / length, offset.y / length);
-
-    _velocity = CGPointMake(direction.x * ZOMBIE_MOVE_POINTS_PER_SEC,
-                            direction.y * ZOMBIE_MOVE_POINTS_PER_SEC);
+    _velocity = CGPointMultiplyScalar(direction, ZOMBIE_MOVE_POINTS_PER_SEC);
 }
 
 - (void)boundsCheckPlayer
