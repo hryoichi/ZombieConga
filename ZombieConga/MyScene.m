@@ -11,6 +11,9 @@
 @implementation MyScene
 {
     SKSpriteNode *_zombie;
+    CGPoint _velocity;
+    NSTimeInterval _lastUpdateTime;
+    NSTimeInterval _dt;
 }
 
 -(id)initWithSize:(CGSize)size
@@ -23,9 +26,31 @@
 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0, 100.0);
+        // [_zombie setScale:2.0]; // SKNode method
         [self addChild:_zombie];
     }
     return self;
+}
+
+- (void)update:(NSTimeInterval)currentTime
+{
+    if (_lastUpdateTime) {
+        _dt = currentTime - _lastUpdateTime;
+    }
+    else {
+        _dt = 0;
+    }
+    _lastUpdateTime = currentTime;
+
+    [self moveSprite:_zombie velocity:CGPointMake(ZOMBIE_MOVE_POINTS_PER_SEC, 0)];
+}
+
+- (void)moveSprite:(SKSpriteNode *)sprite velocity:(CGPoint)velocity
+{
+    CGPoint amountToMove = CGPointMake(velocity.x * _dt, velocity.y * _dt);
+
+    sprite.position = CGPointMake(sprite.position.x + amountToMove.x,
+                                  sprite.position.y + amountToMove.y);
 }
 
 @end
