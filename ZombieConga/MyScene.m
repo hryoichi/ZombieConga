@@ -43,6 +43,7 @@
     _lastUpdateTime = currentTime;
 
     [self moveSprite:_zombie velocity:_velocity];
+    [self boundsCheckPlayer];
 }
 
 #pragma mark - Touch Events
@@ -89,6 +90,36 @@
 
     _velocity = CGPointMake(direction.x * ZOMBIE_MOVE_POINTS_PER_SEC,
                             direction.y * ZOMBIE_MOVE_POINTS_PER_SEC);
+}
+
+- (void)boundsCheckPlayer
+{
+    CGPoint newPosition = _zombie.position;
+    CGPoint newVelocity = _velocity;
+
+    CGPoint bottomLeft = CGPointZero;
+    CGPoint topRight = CGPointMake(self.size.width, self.size.height);
+
+    if (newPosition.x <= bottomLeft.x) {
+        newPosition.x = bottomLeft.x;
+        newVelocity.x = -newVelocity.x;
+    }
+    if (newPosition.x >= topRight.x) {
+        newPosition.x = topRight.x;
+        newVelocity.x = -newVelocity.x;
+    }
+
+    if (newPosition.y <= bottomLeft.y) {
+        newPosition.y = bottomLeft.y;
+        newVelocity.y = -newVelocity.y;
+    }
+    if (newPosition.y >= topRight.y) {
+        newPosition.y = topRight.y;
+        newVelocity.y = -newVelocity.y;
+    }
+
+    _zombie.position = newPosition;
+    _velocity = newVelocity;
 }
 
 @end
