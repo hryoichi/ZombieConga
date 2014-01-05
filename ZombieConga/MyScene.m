@@ -70,7 +70,10 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     NSTimeInterval _lastUpdateTime;
     NSTimeInterval _dt;
     CGPoint _lastTouchLocation;
+    SKAction *_zombieAnimation;
 }
+
+#pragma mark - Lifecycle
 
 -(id)initWithSize:(CGSize)size
 {
@@ -83,6 +86,22 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0, 100.0);
         [self addChild:_zombie];
+
+        NSMutableArray *textures = [NSMutableArray arrayWithCapacity:10];
+        for (NSInteger i = 1; i < 4; i++) {
+            NSString *textureName = [NSString stringWithFormat:@"zombie%d", i];
+            SKTexture *texture = [SKTexture textureWithImageNamed:textureName];
+            [textures addObject:texture];
+        }
+
+        for (NSInteger j = 4; j > 1; j--) {
+            NSString *textureName = [NSString stringWithFormat:@"zombie%d", j];
+            SKTexture *texture = [SKTexture textureWithImageNamed:textureName];
+            [textures addObject:texture];
+        }
+
+        _zombieAnimation = [SKAction animateWithTextures:textures timePerFrame:0.1];
+        // [_zombie runAction:[SKAction repeatActionForever:_zombieAnimation]];
 
         [self runAction:[SKAction repeatActionForever:[SKAction sequence:@[
             [SKAction performSelector:@selector(spawnEnemy) onTarget:self],
@@ -108,6 +127,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     if (distance < ZOMBIE_MOVE_POINTS_PER_SEC * _dt) {
         _zombie.position = _lastTouchLocation;
         _velocity = CGPointZero;
+        [self stopZombieAnimation];
     }
     else {
         [self moveSprite:_zombie velocity:_velocity];
@@ -175,6 +195,8 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
 - (void)moveZombieToward:(CGPoint)location
 {
+    [self startZombieAnimation];
+
     CGPoint offset = CGPointSubtract(location, _zombie.position);
     CGPoint direction = CGPointNormalize(offset);
 
@@ -222,6 +244,18 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     SKAction *actionRemove = [SKAction removeFromParent];
 
     [enemy runAction:[SKAction sequence:@[actionMove, actionRemove]]];
+}
+
+- (void)startZombieAnimation
+{
+    if (![_zombie actionForKey:@"animation"]) {
+        [_zombie runAction:[SKAction repeatActionForever:_zombieAnimation] withKey:@"animation"];
+    }
+}
+
+- (void)stopZombieAnimation
+{
+    [_zombie removeActionForKey:@"animation"];
 }
 
 @end
