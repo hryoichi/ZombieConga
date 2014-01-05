@@ -306,6 +306,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         SKSpriteNode *cat = (SKSpriteNode *)node;
         if (CGRectIntersectsRect(cat.frame, _zombie.frame)) {
             [cat removeFromParent];
+            [self runAction:[SKAction playSoundFileNamed:@"hitCat.wav" waitForCompletion:NO]];
         }
     }];
 
@@ -314,6 +315,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         CGRect smallerFrame = CGRectInset(enemy.frame, 20.0, 20.0);
         if (CGRectIntersectsRect(smallerFrame, _zombie.frame)) {
             [enemy removeFromParent];
+            [self runAction:[SKAction playSoundFileNamed:@"hitCatLady.wav" waitForCompletion:NO]];
         }
     }];
 }
