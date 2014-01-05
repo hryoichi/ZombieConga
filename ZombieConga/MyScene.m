@@ -139,6 +139,8 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         [self boundsCheckPlayer];
         [self rotateSprite:_zombie toFace:_velocity rotateRadiansPerSec:ZOMBIE_ROTATE_RADIANS_PER_SEC];
     }
+
+    [self checkCollisions];
 }
 
 #pragma mark - Touch Events
@@ -241,6 +243,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 - (void)spawnEnemy
 {
     SKSpriteNode *enemy = [SKSpriteNode spriteNodeWithImageNamed:@"enemy"];
+    enemy.name = @"enemy";
     enemy.position = CGPointMake(self.size.width + enemy.size.width/2,
                                  ScalarRandomRange(enemy.size.height/2, self.size.height - enemy.size.height/2));
     [self addChild:enemy];
@@ -254,6 +257,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 - (void)spawnCat
 {
     SKSpriteNode *cat = [SKSpriteNode spriteNodeWithImageNamed:@"cat"];
+    cat.name = @"cat";
     cat.position = CGPointMake(
         ScalarRandomRange(0, self.size.width),
         ScalarRandomRange(0, self.size.height)
@@ -291,6 +295,24 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 - (void)stopZombieAnimation
 {
     [_zombie removeActionForKey:@"animation"];
+}
+
+- (void)checkCollisions
+{
+    [self enumerateChildNodesWithName:@"cat" usingBlock:^(SKNode *node, BOOL *stop) {
+        SKSpriteNode *cat = (SKSpriteNode *)node;
+        if (CGRectIntersectsRect(cat.frame, _zombie.frame)) {
+            [cat removeFromParent];
+        }
+    }];
+
+    [self enumerateChildNodesWithName:@"enemy" usingBlock:^(SKNode *node, BOOL *stop) {
+        SKSpriteNode *enemy = (SKSpriteNode *)node;
+        CGRect smallerFrame = CGRectInset(enemy.frame, 20.0, 20.0);
+        if (CGRectIntersectsRect(smallerFrame, _zombie.frame)) {
+            [enemy removeFromParent];
+        }
+    }];
 }
 
 @end
