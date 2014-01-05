@@ -77,6 +77,8 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         _zombie.position = CGPointMake(100.0, 100.0);
         // [_zombie setScale:2.0]; // SKNode method
         [self addChild:_zombie];
+
+        [self spawnEnemy];
     }
     return self;
 }
@@ -198,6 +200,34 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
     _zombie.position = newPosition;
     _velocity = newVelocity;
+}
+
+- (void)spawnEnemy
+{
+    SKSpriteNode *enemy = [SKSpriteNode spriteNodeWithImageNamed:@"enemy"];
+    enemy.position = CGPointMake(self.size.width + enemy.size.width/2, self.size.height/2);
+    [self addChild:enemy];
+
+    SKAction *actionMidMove =
+    [SKAction moveByX:-self.size.width/2 - enemy.size.width/2
+                    y:-self.size.height/2 + enemy.size.height/2
+             duration:1.0];
+
+    SKAction *actionMove =
+    [SKAction moveByX:-self.size.width/2 - enemy.size.width/2
+                    y:self.size.height/2 + enemy.size.height/2
+             duration:1.0];
+
+    SKAction *wait = [SKAction waitForDuration:0.25];
+    SKAction *logMessage = [SKAction runBlock:^{
+        NSLog(@"Reached bottom!");
+    }];
+
+    SKAction *sequence = [SKAction sequence:@[actionMidMove, logMessage, wait, actionMove]];
+    sequence = [SKAction sequence:@[sequence, [sequence reversedAction]]];
+
+    SKAction *repeat = [SKAction repeatActionForever:sequence];
+    [enemy runAction:repeat];
 }
 
 @end
