@@ -8,6 +8,13 @@
 
 #import "MyScene.h"
 
+#define ARC4RANDOM_MAX 0x100000000
+
+static inline CGFloat ScalarRandomRange(CGFloat min, CGFloat max)
+{
+    return floorf(((double)arc4random() / ARC4RANDOM_MAX) * (max - min) + min);
+}
+
 static inline CGPoint CGPointAdd(const CGPoint a, const CGPoint b)
 {
     return CGPointMake(a.x + b.x, a.y + b.y);
@@ -75,10 +82,12 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0, 100.0);
-        // [_zombie setScale:2.0]; // SKNode method
         [self addChild:_zombie];
 
-        [self spawnEnemy];
+        [self runAction:[SKAction repeatActionForever:[SKAction sequence:@[
+            [SKAction performSelector:@selector(spawnEnemy) onTarget:self],
+            [SKAction waitForDuration:2.0]
+        ]]]];
     }
     return self;
 }
@@ -205,29 +214,14 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 - (void)spawnEnemy
 {
     SKSpriteNode *enemy = [SKSpriteNode spriteNodeWithImageNamed:@"enemy"];
-    enemy.position = CGPointMake(self.size.width + enemy.size.width/2, self.size.height/2);
+    enemy.position = CGPointMake(self.size.width + enemy.size.width/2,
+                                 ScalarRandomRange(enemy.size.height/2, self.size.height - enemy.size.height/2));
     [self addChild:enemy];
 
-    SKAction *actionMidMove =
-    [SKAction moveByX:-self.size.width/2 - enemy.size.width/2
-                    y:-self.size.height/2 + enemy.size.height/2
-             duration:1.0];
+    SKAction *actionMove = [SKAction moveToX:-enemy.size.width/2 duration:2.0];
+    SKAction *actionRemove = [SKAction removeFromParent];
 
-    SKAction *actionMove =
-    [SKAction moveByX:-self.size.width/2 - enemy.size.width/2
-                    y:self.size.height/2 + enemy.size.height/2
-             duration:1.0];
-
-    SKAction *wait = [SKAction waitForDuration:0.25];
-    SKAction *logMessage = [SKAction runBlock:^{
-        NSLog(@"Reached bottom!");
-    }];
-
-    SKAction *sequence = [SKAction sequence:@[actionMidMove, logMessage, wait, actionMove]];
-    sequence = [SKAction sequence:@[sequence, [sequence reversedAction]]];
-
-    SKAction *repeat = [SKAction repeatActionForever:sequence];
-    [enemy runAction:repeat];
+    [enemy runAction:[SKAction sequence:@[actionMove, actionRemove]]];
 }
 
 @end
