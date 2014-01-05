@@ -107,6 +107,11 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
             [SKAction performSelector:@selector(spawnEnemy) onTarget:self],
             [SKAction waitForDuration:2.0]
         ]]]];
+
+        [self runAction:[SKAction repeatActionForever:[SKAction sequence:@[
+            [SKAction performSelector:@selector(spawnCat) onTarget:self],
+            [SKAction waitForDuration:1.0]
+        ]]]];
     }
     return self;
 }
@@ -244,6 +249,30 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     SKAction *actionRemove = [SKAction removeFromParent];
 
     [enemy runAction:[SKAction sequence:@[actionMove, actionRemove]]];
+}
+
+- (void)spawnCat
+{
+    SKSpriteNode *cat = [SKSpriteNode spriteNodeWithImageNamed:@"cat"];
+    cat.position = CGPointMake(
+        ScalarRandomRange(0, self.size.width),
+        ScalarRandomRange(0, self.size.height)
+    );
+    [cat setScale:0];
+    cat.zRotation = -M_PI / 16;
+    [self addChild:cat];
+
+    SKAction *appear = [SKAction scaleTo:1.0 duration:0.5];
+
+    SKAction *leftWiggle = [SKAction rotateByAngle:M_PI/8 duration:0.5];
+    SKAction *rightWiggle = [leftWiggle reversedAction];
+    SKAction *fullWiggle = [SKAction sequence:@[leftWiggle, rightWiggle]];
+    SKAction *wiggleWait = [SKAction repeatAction:fullWiggle count:10];
+
+    SKAction *disappear = [SKAction scaleTo:0.0 duration:0.5];
+    SKAction *removeFromParent = [SKAction removeFromParent];
+
+    [cat runAction:[SKAction sequence:@[appear, wiggleWait, disappear, removeFromParent]]];
 }
 
 - (void)startZombieAnimation
