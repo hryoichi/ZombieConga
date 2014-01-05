@@ -139,7 +139,10 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         [self boundsCheckPlayer];
         [self rotateSprite:_zombie toFace:_velocity rotateRadiansPerSec:ZOMBIE_ROTATE_RADIANS_PER_SEC];
     }
+}
 
+- (void)didEvaluateActions
+{
     [self checkCollisions];
 }
 
