@@ -91,13 +91,13 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
         NSMutableArray *textures = [NSMutableArray arrayWithCapacity:10];
         for (NSInteger i = 1; i < 4; i++) {
-            NSString *textureName = [NSString stringWithFormat:@"zombie%d", i];
+            NSString *textureName = [NSString stringWithFormat:@"zombie%ld", (long)i];
             SKTexture *texture = [SKTexture textureWithImageNamed:textureName];
             [textures addObject:texture];
         }
 
         for (NSInteger j = 4; j > 1; j--) {
-            NSString *textureName = [NSString stringWithFormat:@"zombie%d", j];
+            NSString *textureName = [NSString stringWithFormat:@"zombie%ld", (long)j];
             SKTexture *texture = [SKTexture textureWithImageNamed:textureName];
             [textures addObject:texture];
         }
