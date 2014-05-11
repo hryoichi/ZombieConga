@@ -163,7 +163,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         _gameOver = YES;
         NSLog(@"Your lose!");
 
-        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size];
+        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size won:NO];
         SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
         [self.view presentScene:gameOverScene transition:reveal];
     }
@@ -395,7 +395,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         _gameOver = YES;
         NSLog(@"You win!");
 
-        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size];
+        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size won:YES];
         SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
         [self.view presentScene:gameOverScene transition:reveal];
     }
