@@ -7,6 +7,7 @@
 //
 
 #import "MyScene.h"
+@import AVFoundation;
 #import "GameOverScene.h"
 
 static const float ZOMBIE_MOVE_POINTS_PER_SEC = 120.0;
@@ -81,6 +82,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     BOOL _invincible;
     NSInteger _lives;
     BOOL _gameOver;
+    AVAudioPlayer *_backgroundMusicPlayer;
 }
 
 #pragma mark - Lifecycle
@@ -95,6 +97,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
         _lives = 5;
         _gameOver = NO;
+        [self playBackgroundMusic:@"bgMusic.mp3"];
 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0f, 100.0f);
@@ -162,6 +165,8 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     if (_lives <= 0 && !_gameOver) {
         _gameOver = YES;
         NSLog(@"Your lose!");
+
+        [_backgroundMusicPlayer stop];
 
         SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size won:NO];
         SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
@@ -395,6 +400,8 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         _gameOver = YES;
         NSLog(@"You win!");
 
+        [_backgroundMusicPlayer stop];
+
         SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size won:YES];
         SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
         [self.view presentScene:gameOverScene transition:reveal];
@@ -423,6 +430,18 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
             *stop = YES;
         }
     }];
+}
+
+#pragma mark - Audio helper
+
+- (void)playBackgroundMusic:(NSString *)filename {
+    NSError *error;
+    NSURL *backgroundMusicURL = [[NSBundle mainBundle] URLForResource:filename withExtension:nil];
+
+    _backgroundMusicPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:backgroundMusicURL error:&error];
+    _backgroundMusicPlayer.numberOfLoops = -1;
+    [_backgroundMusicPlayer prepareToPlay];
+    [_backgroundMusicPlayer play];
 }
 
 @end
