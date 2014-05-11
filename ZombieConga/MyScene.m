@@ -7,6 +7,7 @@
 //
 
 #import "MyScene.h"
+#import "GameOverScene.h"
 
 static const float ZOMBIE_MOVE_POINTS_PER_SEC = 120.0;
 static const float ZOMBIE_ROTATE_RADIANS_PER_SEC = 4 * M_PI;
@@ -161,6 +162,10 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     if (_lives <= 0 && !_gameOver) {
         _gameOver = YES;
         NSLog(@"Your lose!");
+
+        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size];
+        SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
+        [self.view presentScene:gameOverScene transition:reveal];
     }
 }
 
@@ -389,6 +394,10 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     if (trainCount >= 30 && !_gameOver) {
         _gameOver = YES;
         NSLog(@"You win!");
+
+        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size];
+        SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
+        [self.view presentScene:gameOverScene transition:reveal];
     }
 }
 
