@@ -73,6 +73,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     SKAction *_zombieAnimation;
     SKAction *_catCollisionSound;
     SKAction *_enemyCollisionSound;
+    BOOL _invincible;
 }
 
 #pragma mark - Lifecycle
@@ -315,12 +316,30 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         }
     }];
 
+    if (_invincible) return;
+
     [self enumerateChildNodesWithName:@"enemy" usingBlock:^(SKNode *node, BOOL *stop) {
         SKSpriteNode *enemy = (SKSpriteNode *)node;
         CGRect smallerFrame = CGRectInset(enemy.frame, 20.0, 20.0);
+
         if (CGRectIntersectsRect(smallerFrame, _zombie.frame)) {
-            [enemy removeFromParent];
+            // [enemy removeFromParent];
             [self runAction:_enemyCollisionSound];
+            _invincible = YES;
+
+            CGFloat blinkTimes = 10.0f;
+            NSTimeInterval blinkDuration = 3.0;
+            SKAction *blinkAction = [SKAction customActionWithDuration:blinkDuration actionBlock:^(SKNode *node, CGFloat elapsedTime) {
+                CGFloat durationPerTime = blinkDuration / blinkTimes;
+                CGFloat remainder = fmodf(elapsedTime, durationPerTime);
+                node.hidden = remainder > (durationPerTime / 2);
+            }];
+
+            SKAction *sequence = [SKAction sequence:@[blinkAction, [SKAction runBlock:^{
+                _zombie.hidden = NO;
+                _invincible = NO;
+            }]]];
+            [_zombie runAction:sequence];
         }
     }];
 }
