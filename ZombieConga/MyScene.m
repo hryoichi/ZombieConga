@@ -78,6 +78,8 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     SKAction *_catCollisionSound;
     SKAction *_enemyCollisionSound;
     BOOL _invincible;
+    NSInteger _lives;
+    BOOL _gameOver;
 }
 
 #pragma mark - Lifecycle
@@ -89,6 +91,9 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"background"];
         bg.position = CGPointMake(self.size.width/2, self.size.height/2);
         [self addChild:bg];
+
+        _lives = 5;
+        _gameOver = NO;
 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0f, 100.0f);
@@ -152,6 +157,11 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     }
 
     [self moveTrain];
+
+    if (_lives <= 0 && !_gameOver) {
+        _gameOver = YES;
+        NSLog(@"Your lose!");
+    }
 }
 
 - (void)didEvaluateActions
@@ -337,6 +347,9 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         if (CGRectIntersectsRect(smallerFrame, _zombie.frame)) {
             // [enemy removeFromParent];
             [self runAction:_enemyCollisionSound];
+            [self loseCats];
+            _lives--;
+
             _invincible = YES;
 
             CGFloat blinkTimes = 10.0f;
@@ -356,10 +369,11 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     }];
 }
 
-- (void)moveTrain
-{
+- (void)moveTrain {
+    __block NSInteger trainCount = 0;
     __block CGPoint targetPosition = _zombie.position;
     [self enumerateChildNodesWithName:@"train" usingBlock:^(SKNode *node, BOOL *stop) {
+        trainCount++;
         if (!node.hasActions) {
             CGFloat actionDuration = 0.3f;
             CGPoint offset = CGPointSubtract(targetPosition, node.position);
@@ -370,6 +384,35 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
             [node runAction:moveAction];
         }
         targetPosition = node.position;
+    }];
+
+    if (trainCount >= 30 && !_gameOver) {
+        _gameOver = YES;
+        NSLog(@"You win!");
+    }
+}
+
+- (void)loseCats {
+    __block NSInteger loseCount = 0;
+    [self enumerateChildNodesWithName:@"train" usingBlock:^(SKNode *node, BOOL *stop) {
+        CGPoint randomSpot = node.position;
+        randomSpot.x += ScalarRandomRange(-100.0f, 100.0f);
+        randomSpot.y += ScalarRandomRange(-100.0f, 100.0f);
+
+        node.name = @"";
+
+        SKAction *group = [SKAction group:@[
+            [SKAction rotateByAngle:M_PI * 4 duration:1.0],
+            [SKAction moveTo:randomSpot duration:1.0],
+            [SKAction scaleTo:0.0f duration:1.0]
+        ]];
+        SKAction *sequence = [SKAction sequence:@[group, [SKAction removeFromParent]]];
+        [node runAction:sequence];
+
+        loseCount++;
+        if (loseCount >= 2) {
+            *stop = YES;
+        }
     }];
 }
 
