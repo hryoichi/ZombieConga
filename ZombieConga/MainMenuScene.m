@@ -7,6 +7,13 @@
 //
 
 #import "MainMenuScene.h"
+#import "MyScene.h"
+
+@interface MainMenuScene ()
+
+@property (nonatomic, strong) MyScene *myScene;
+
+@end
 
 @implementation MainMenuScene
 
@@ -17,9 +24,17 @@
         SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"MainMenu"];
         bg.position = CGPointMake(self.size.width / 2, self.size.height / 2);
         [self addChild:bg];
+
+        // NOTE: Load in advance because loading myScene is heavy
+        _myScene = [[MyScene alloc] initWithSize:self.size];
     }
 
     return self;
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    SKTransition *reveal = [SKTransition doorwayWithDuration:0.5];
+    [self.view presentScene:self.myScene transition:reveal];
 }
 
 @end
