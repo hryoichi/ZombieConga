@@ -96,11 +96,13 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         _gameOver = NO;
         [self playBackgroundMusic:@"bgMusic.mp3"];
 
-        SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"background"];
-        bg.anchorPoint = CGPointZero;
-        bg.position = CGPointZero;
-        bg.name = @"bg";
-        [self addChild:bg];
+        for (NSInteger i = 0; i < 2; i++) {
+            SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"background"];
+            bg.anchorPoint = CGPointZero;
+            bg.position = CGPointMake(i * bg.size.width, 0.0f);
+            bg.name = @"bg";
+            [self addChild:bg];
+        }
 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0f, 100.0f);
@@ -442,6 +444,10 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         CGPoint bgVelocity = CGPointMake(-BG_POINTS_PER_SEC, 0);
         CGPoint amountToMove = CGPointMultiplyScalar(bgVelocity, _dt);
         bg.position = CGPointAdd(bg.position, amountToMove);
+
+        if (bg.position.x <= -bg.size.width) {
+            bg.position = CGPointMake(bg.position.x + bg.size.width * 2, bg.position.y);
+        }
     }];
 }
 
