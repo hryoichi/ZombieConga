@@ -10,9 +10,10 @@
 @import AVFoundation;
 #import "GameOverScene.h"
 
-static const float ZOMBIE_MOVE_POINTS_PER_SEC = 120.0;
-static const float ZOMBIE_ROTATE_RADIANS_PER_SEC = 4 * M_PI;
-static const float CAT_MOVE_POINTS_PER_SEC = 120.0;
+static const CGFloat ZOMBIE_MOVE_POINTS_PER_SEC = 120.0f;
+static const CGFloat ZOMBIE_ROTATE_RADIANS_PER_SEC = 4 * M_PI;
+static const CGFloat CAT_MOVE_POINTS_PER_SEC = 120.0f;
+static const CGFloat BG_POINTS_PER_SEC = 50.0f;
 
 #define ARC4RANDOM_MAX 0x100000000
 
@@ -91,13 +92,15 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 {
     if (self = [super initWithSize:size]) {
         self.backgroundColor = [SKColor whiteColor];
-        SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"background"];
-        bg.position = CGPointMake(self.size.width/2, self.size.height/2);
-        [self addChild:bg];
-
         _lives = 5;
         _gameOver = NO;
         [self playBackgroundMusic:@"bgMusic.mp3"];
+
+        SKSpriteNode *bg = [SKSpriteNode spriteNodeWithImageNamed:@"background"];
+        bg.anchorPoint = CGPointZero;
+        bg.position = CGPointZero;
+        bg.name = @"bg";
+        [self addChild:bg];
 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0f, 100.0f);
@@ -161,6 +164,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     }
 
     [self moveTrain];
+    [self moveBg];
 
     if (_lives <= 0 && !_gameOver) {
         _gameOver = YES;
@@ -429,6 +433,15 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
         if (loseCount >= 2) {
             *stop = YES;
         }
+    }];
+}
+
+- (void)moveBg {
+    [self enumerateChildNodesWithName:@"bg" usingBlock:^(SKNode *node, BOOL *stop) {
+        SKSpriteNode *bg = (SKSpriteNode *)node;
+        CGPoint bgVelocity = CGPointMake(-BG_POINTS_PER_SEC, 0);
+        CGPoint amountToMove = CGPointMultiplyScalar(bgVelocity, _dt);
+        bg.position = CGPointAdd(bg.position, amountToMove);
     }];
 }
 
