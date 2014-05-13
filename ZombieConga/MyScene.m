@@ -155,19 +155,9 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     }
     _lastUpdateTime = currentTime;
 
-    CGPoint offset = CGPointSubtract(_lastTouchLocation, _zombie.position);
-    CGFloat distance = CGPointLength(offset);
-
-    if (distance < ZOMBIE_MOVE_POINTS_PER_SEC * _dt) {
-        _zombie.position = _lastTouchLocation;
-        _velocity = CGPointZero;
-        [self stopZombieAnimation];
-    }
-    else {
-        [self moveSprite:_zombie velocity:_velocity];
-        [self boundsCheckPlayer];
-        [self rotateSprite:_zombie toFace:_velocity rotateRadiansPerSec:ZOMBIE_ROTATE_RADIANS_PER_SEC];
-    }
+    [self moveSprite:_zombie velocity:_velocity];
+    [self boundsCheckPlayer];
+    [self rotateSprite:_zombie toFace:_velocity rotateRadiansPerSec:ZOMBIE_ROTATE_RADIANS_PER_SEC];
 
     [self moveTrain];
     [self moveBg];
@@ -184,35 +174,31 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     }
 }
 
-- (void)didEvaluateActions
-{
+- (void)didEvaluateActions {
     [self checkCollisions];
 }
 
 #pragma mark - Touch Events
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     UITouch *touch = [touches anyObject];
-    CGPoint touchLocation = [touch locationInNode:self];
+    CGPoint touchLocation = [touch locationInNode:_bgLayer];
     [self moveZombieToward:touchLocation];
 
     _lastTouchLocation = touchLocation;
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     UITouch *touch = [touches anyObject];
-    CGPoint touchLocation = [touch locationInNode:self];
+    CGPoint touchLocation = [touch locationInNode:_bgLayer];
     [self moveZombieToward:touchLocation];
 
     _lastTouchLocation = touchLocation;
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     UITouch *touch = [touches anyObject];
-    CGPoint touchLocation = [touch locationInNode:self];
+    CGPoint touchLocation = [touch locationInNode:_bgLayer];
     [self moveZombieToward:touchLocation];
 
     _lastTouchLocation = touchLocation;
@@ -256,13 +242,12 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     _velocity = CGPointMultiplyScalar(direction, ZOMBIE_MOVE_POINTS_PER_SEC);
 }
 
-- (void)boundsCheckPlayer
-{
+- (void)boundsCheckPlayer {
     CGPoint newPosition = _zombie.position;
     CGPoint newVelocity = _velocity;
 
-    CGPoint bottomLeft = CGPointZero;
-    CGPoint topRight = CGPointMake(self.size.width, self.size.height);
+    CGPoint bottomLeft = [_bgLayer convertPoint:CGPointZero fromNode:self];
+    CGPoint topRight = [_bgLayer convertPoint:CGPointMake(self.size.width, self.size.height) fromNode:self];
 
     if (newPosition.x <= bottomLeft.x) {
         newPosition.x = bottomLeft.x;
@@ -451,8 +436,9 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
     [_bgLayer enumerateChildNodesWithName:@"bg" usingBlock:^(SKNode *node, BOOL *stop) {
         SKSpriteNode *bg = (SKSpriteNode *)node;
+        CGPoint bgScreenPos = [_bgLayer convertPoint:bg.position toNode:self];
 
-        if (bg.position.x <= -bg.size.width) {
+        if (bgScreenPos.x <= -bg.size.width) {
             bg.position = CGPointMake(bg.position.x + bg.size.width * 2, bg.position.y);
         }
     }];
