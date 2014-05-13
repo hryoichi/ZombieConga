@@ -84,6 +84,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     NSInteger _lives;
     BOOL _gameOver;
     AVAudioPlayer *_backgroundMusicPlayer;
+    SKNode *_bgLayer;
 }
 
 #pragma mark - Lifecycle
@@ -91,6 +92,9 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 -(id)initWithSize:(CGSize)size
 {
     if (self = [super initWithSize:size]) {
+        _bgLayer = [SKNode node];
+        [self addChild:_bgLayer];
+
         self.backgroundColor = [SKColor whiteColor];
         _lives = 5;
         _gameOver = NO;
@@ -101,13 +105,13 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
             bg.anchorPoint = CGPointZero;
             bg.position = CGPointMake(i * bg.size.width, 0.0f);
             bg.name = @"bg";
-            [self addChild:bg];
+            [_bgLayer addChild:bg];
         }
 
         _zombie = [SKSpriteNode spriteNodeWithImageNamed:@"zombie1"];
         _zombie.position = CGPointMake(100.0f, 100.0f);
         _zombie.zPosition = 100.0f;
-        [self addChild:_zombie];
+        [_bgLayer addChild:_zombie];
 
         NSMutableArray *textures = [NSMutableArray arrayWithCapacity:10];
         for (NSInteger i = 1; i < 4; i++) {
@@ -286,9 +290,11 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 {
     SKSpriteNode *enemy = [SKSpriteNode spriteNodeWithImageNamed:@"enemy"];
     enemy.name = @"enemy";
-    enemy.position = CGPointMake(self.size.width + enemy.size.width/2,
-                                 ScalarRandomRange(enemy.size.height/2, self.size.height - enemy.size.height/2));
-    [self addChild:enemy];
+    enemy.position = CGPointMake(
+        self.size.width + enemy.size.width / 2,
+        ScalarRandomRange(enemy.size.height / 2, self.size.height - enemy.size.height/2)
+    );
+    [_bgLayer addChild:enemy];
 
     SKAction *actionMove = [SKAction moveToX:-enemy.size.width/2 duration:2.0];
     SKAction *actionRemove = [SKAction removeFromParent];
@@ -306,7 +312,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     );
     [cat setScale:0];
     cat.zRotation = -M_PI / 16;
-    [self addChild:cat];
+    [_bgLayer addChild:cat];
 
     SKAction *appear = [SKAction scaleTo:1.0 duration:0.5];
 
@@ -341,7 +347,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
 - (void)checkCollisions
 {
-    [self enumerateChildNodesWithName:@"cat" usingBlock:^(SKNode *node, BOOL *stop) {
+    [_bgLayer enumerateChildNodesWithName:@"cat" usingBlock:^(SKNode *node, BOOL *stop) {
         SKSpriteNode *cat = (SKSpriteNode *)node;
         if (CGRectIntersectsRect(cat.frame, _zombie.frame)) {
             // [cat removeFromParent];
@@ -356,7 +362,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
     if (_invincible) return;
 
-    [self enumerateChildNodesWithName:@"enemy" usingBlock:^(SKNode *node, BOOL *stop) {
+    [_bgLayer enumerateChildNodesWithName:@"enemy" usingBlock:^(SKNode *node, BOOL *stop) {
         SKSpriteNode *enemy = (SKSpriteNode *)node;
         CGRect smallerFrame = CGRectInset(enemy.frame, 20.0, 20.0);
 
@@ -388,7 +394,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 - (void)moveTrain {
     __block NSInteger trainCount = 0;
     __block CGPoint targetPosition = _zombie.position;
-    [self enumerateChildNodesWithName:@"train" usingBlock:^(SKNode *node, BOOL *stop) {
+    [_bgLayer enumerateChildNodesWithName:@"train" usingBlock:^(SKNode *node, BOOL *stop) {
         trainCount++;
         if (!node.hasActions) {
             CGFloat actionDuration = 0.3f;
@@ -416,7 +422,7 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 
 - (void)loseCats {
     __block NSInteger loseCount = 0;
-    [self enumerateChildNodesWithName:@"train" usingBlock:^(SKNode *node, BOOL *stop) {
+    [_bgLayer enumerateChildNodesWithName:@"train" usingBlock:^(SKNode *node, BOOL *stop) {
         CGPoint randomSpot = node.position;
         randomSpot.x += ScalarRandomRange(-100.0f, 100.0f);
         randomSpot.y += ScalarRandomRange(-100.0f, 100.0f);
@@ -439,11 +445,12 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 }
 
 - (void)moveBg {
-    [self enumerateChildNodesWithName:@"bg" usingBlock:^(SKNode *node, BOOL *stop) {
+    CGPoint bgVelocity = CGPointMake(-BG_POINTS_PER_SEC, 0);
+    CGPoint amountToMove = CGPointMultiplyScalar(bgVelocity, _dt);
+    _bgLayer.position = CGPointAdd(_bgLayer.position, amountToMove);
+
+    [_bgLayer enumerateChildNodesWithName:@"bg" usingBlock:^(SKNode *node, BOOL *stop) {
         SKSpriteNode *bg = (SKSpriteNode *)node;
-        CGPoint bgVelocity = CGPointMake(-BG_POINTS_PER_SEC, 0);
-        CGPoint amountToMove = CGPointMultiplyScalar(bgVelocity, _dt);
-        bg.position = CGPointAdd(bg.position, amountToMove);
 
         if (bg.position.x <= -bg.size.width) {
             bg.position = CGPointMake(bg.position.x + bg.size.width * 2, bg.position.y);
