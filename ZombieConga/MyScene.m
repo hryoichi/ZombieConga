@@ -291,10 +291,11 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
 {
     SKSpriteNode *cat = [SKSpriteNode spriteNodeWithImageNamed:@"cat"];
     cat.name = @"cat";
-    cat.position = CGPointMake(
+    CGPoint catScenePos = CGPointMake(
         ScalarRandomRange(0, self.size.width),
         ScalarRandomRange(0, self.size.height)
     );
+    cat.position = [self convertPoint:catScenePos toNode:_bgLayer];
     [cat setScale:0];
     cat.zRotation = -M_PI / 16;
     [_bgLayer addChild:cat];
