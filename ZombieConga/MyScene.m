@@ -271,17 +271,17 @@ static inline CGFloat ScalarShortestAngleBetween(const CGFloat a, const CGFloat 
     _velocity = newVelocity;
 }
 
-- (void)spawnEnemy
-{
+- (void)spawnEnemy {
     SKSpriteNode *enemy = [SKSpriteNode spriteNodeWithImageNamed:@"enemy"];
     enemy.name = @"enemy";
-    enemy.position = CGPointMake(
+    CGPoint enemyScenePos = CGPointMake(
         self.size.width + enemy.size.width / 2,
-        ScalarRandomRange(enemy.size.height / 2, self.size.height - enemy.size.height/2)
+        ScalarRandomRange(enemy.size.height / 2, self.size.height - enemy.size.height / 2)
     );
+    enemy.position = [self convertPoint:enemyScenePos toNode:_bgLayer];
     [_bgLayer addChild:enemy];
 
-    SKAction *actionMove = [SKAction moveToX:-enemy.size.width/2 duration:2.0];
+    SKAction *actionMove = [SKAction moveByX:-self.size.width + enemy.size.width y:0 duration:2.0];
     SKAction *actionRemove = [SKAction removeFromParent];
 
     [enemy runAction:[SKAction sequence:@[actionMove, actionRemove]]];
